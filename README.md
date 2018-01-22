@@ -208,16 +208,22 @@ public class MyHandler : IStaticHandler
         switch (message) 
         {
             case ChangeName c: 
-                user.ChangeName(c.Name);
+                Handle(user, c);
                 break;
             ...
         }
         await repository.Save(ctx, user);
     }
+
+    [HandlerMethod]
+    public async Task Handle(UserAggregate user, ChangeName c) 
+    {
+        user.ChangeName(c.Name);
+    }
 }
 ```
 
-In this case, all handler methods would have to be registered manually with the global handler map. To make working with static dispatching more convenient, the `StaticHandlerBase` base class has been added to the framework. Handlers inheriting from that class can then register individual handler methods and `StaticHandlerBase` will handle the routing internally. 
+If a single switch statement is not preferred then one can inherit from the `StaticHandlerBase` base class. Handlers inheriting from that class can then register individual handler methods and `StaticHandlerBase` will handle the routing internally. 
 
 ```C#
 [HandlerClass(HandlerType.Command)]
@@ -226,10 +232,13 @@ public class MyHandler : StaticHandlerBase
     private IRepository repository;
     public MyHandler(IRepository repository) 
     {
+        // Register handlers with the base class
         Register<ChangeName>(Handle);
         this.repository = repository;
     }
 
+    // This method will be called by StaticHandlerBase.Handle
+    // at run-time
     [HandlerMethod]
     public async Task Handle(MessageContext ctx, ChangeName c) 
     {
@@ -249,7 +258,7 @@ Dynamic dispatching is enabled by using the `DynamicDispatcher` class. This form
 public class MyHandler
 {
     [HandlerMethod]
-    public void Handle(ChangeName c, UserAggregate user)
+    public void Handle(UserAggregate user, ChangeName c)
     {
         user.ChangeName(c.Name);
     }
@@ -257,16 +266,27 @@ public class MyHandler
 ```
 
 ### Running Opine
+Opine comes with a message processing console application. This application, **Opine.Job** provides a quick way to process work asynchronously. The job can process Events or Commands.
 
 #### Opine.Job
+The application reads new messages from the registered `IMessageStore` instance. You specify what Stream to read (Event or Command). You can provide override options such as the offset into the message store to start reading from and the number of messages to read into memory. You can also provide a specific Ttype (Aggregate type) to process. 
+
+| Option | Name | Default Value | Description |
+|--------|------|:-------------:|-------------|
+| -s | Stream | **Required** | Possible values: *events*, *commands*. |
+| -t | Type   | **Required** | Possible values: *User*, *Invoice* |
+| -o | Offset | 0 | Offset in message stream |
+| -b | Buffer | 100 | Number of messages to read per fetch |
+| -a | Plugin Assemblies | **Required** | Possible values: *Path/To/Your/PluginAssembly.dll* |
+
 
 #### Plugins
-Plugins are created by implementing the `IPlugin` interface. The interface provides methods that allow the plugin to participate in the lifecycle of the Job application:
+Plugins are created by implementing the `IPlugin` interface. Your implementation of `IPlugin` will give you the chance to make decisions such as what type of repository and dispatching strategy you would like to use. The interface provides methods that allow the plugin to participate in the lifecycle of the Job application:
 * Parse command line arguments
 * Register services for dependency injection
 * Register handlers for commands and events
 
-```
+```C#
 public class TestPlugin : IPlugin 
 {
     public void ParseArguments(string[] args)
@@ -298,7 +318,12 @@ public class TestPlugin : IPlugin
     
     public void RegisterHandlers(IHandlerRegistry handlerRegistry)
     {
-        
+        var finder = new HandlerFinder();
+        var handlers = finder.FindHandlers(typeof(MyHandler));
+        foreach (var h in handlers)
+        {
+            handlerRegistry.Register(h.MessageType, h);
+        }
     }
 }
 ```
