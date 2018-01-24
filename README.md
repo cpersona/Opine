@@ -303,12 +303,14 @@ public class TestPlugin : IPlugin
             // Repository
             .AddScoped<IRepository, EventSourcedRepository>()
             // Messaging
-            .AddScoped<IMessageStore, ESMessageStore>(s => 
-                {
+            .AddScoped<IEventStoreConnection>(s => {
                     var connection = EventStoreConnection.Create(new IPEndPoint(IPAddress.Loopback, 1113));
                     connection.ConnectAsync().Wait();
                     return connection;
                 })
+            .AddScoped<IMessageStore, ESMessageStore>()
+            .AddScoped<ISnapshotStore, ESSnapshotStore>()
+                
             // Unit of work
             .AddScoped<IUnitOfWork, ESUnitOfWork>()
             
