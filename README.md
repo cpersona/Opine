@@ -309,6 +309,9 @@ public class TestPlugin : IPlugin
                     return connection;
                 })
             .AddScoped<IMessageStore, ESMessageStore>()
+            // NOTE: We are using ESMessageStore to read messages and write messages
+            //       Serve the same instance in both cases
+            .AddScoped<IMessageReader>(s => s.GetService<IMessageStore>())
             .AddScoped<ISnapshotStore, ESSnapshotStore>()
                 
             // Unit of work
