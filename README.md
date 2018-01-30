@@ -141,7 +141,57 @@ public class UserAggregate : Aggregate<User>
 ```
 
 #### Event Sourcing
-Event sourcing in Opine is enabled by using the `EventSourcedRepository` in conjunction with aggregates that inherit `EventSourcedAggregate<T>`. Event sourced Aggregates must provide a constructor that accepts a root instance (snapshot), a version number, and a sequence of events to source from. 
+Event sourcing in Opine is enabled by using the `EventSourcedRepository` in conjunction with aggregates that inherit `EventSourcedAggregateBase<T>` and `EventSourcedAggregate<T>`. Event sourced Aggregates must provide a constructor that accepts a root instance (snapshot), a version number, and a sequence of events to source from. 
+
+Classes that inherit from `EventSourcedAggregateBase<T>` can define a simple case statement to handle event sourcing.
+
+```C#
+// Root entity type (can be a non-EF POCO)
+public class User 
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+}
+
+// Event sourced aggregate
+public class UserAggregate : EventSourcedAggregateBase<User> 
+{
+    // Constructor has required format
+    public UserAggregate(User root, int version, IEnumerable<IEvent> events) 
+        : base(root, version, events)
+    {
+
+    }
+    
+    public override void Apply(IEvent e)
+    {
+        switch (e) 
+        {
+            case NameChanged evt:
+                OnNameChanged(evt);
+                break;
+            ...
+        }
+    }
+    
+    private void OnNameChanged(NameChanged e)
+    {
+        // Update name on root
+        Root.Name = name;
+    }
+    
+    public void ChangeName(string name)
+    {
+        if (Root.Name != name)
+        {
+            // Emit the event (OnNameChanged will be called by base class)
+            Emit(new NameChanged(name));
+        }
+    }
+}
+```
+
+If using a case statement is not preferred, then the `EventSourcedAggregate<T>` can be used. Event handlers are registered in the constructor of the class utilizing helper methods declare in the base class. 
 
 ```C#
 // Root entity type (can be a non-EF POCO)
@@ -180,6 +230,7 @@ public class UserAggregate : EventSourcedAggregate<User>
     }
 }
 ```
+
 
 ##### Snapshots
 Snapshots are stored in an `ISnapshotStore`. A snapshot is created after an Aggregate's events are saved to the event store. When the Aggregate is loaded, the Snapshot for the Aggregate is loaded and used as the root instance if it is available. 
