@@ -56,11 +56,11 @@ namespace Opine.Job
             int bufferSize = programArgs?.BufferSize ?? 0;
             var failureStream = new Stream(Categories.Failures);
             // Start reading the messages
-            var messageStore = serviceProvider.GetRequiredService<IMessageStore>();
+            var messageReader = serviceProvider.GetRequiredService<IMessageReader>();
             var messageContextAccessor = serviceProvider.GetRequiredService<MessageContextAccessor>();
             while (true)
             {
-                var messages = await messageStore.Read(stream, position, bufferSize);
+                var messages = await messageReader.Read(stream, position, bufferSize);
                 foreach (var m in messages)
                 {
                     try 
@@ -79,8 +79,8 @@ namespace Opine.Job
                             //if (aggregateErrors.HasError(m.Metadata.AggregateId))
                             if (false)
                             {
-                                await messageStore.Store(failureStream, StreamVersion.Any, 
-                                    new[] { new StorableMessage(m.Metadata, m.Data) });
+                                // await messageReader.Store(failureStream, StreamVersion.Any, 
+                                //     new[] { new StorableMessage(m.Metadata, m.Data) });
                             }
                             else
                             {
@@ -92,8 +92,13 @@ namespace Opine.Job
                     catch (Exception ex)
                     {
                         //aggregateErrors.AddError(m.Metadata.AggregateId, ex);
-                        await messageStore.Store(failureStream, StreamVersion.Any, 
-                            new[] { new StorableMessage(m.Metadata, m.Data) });
+                        // await messageReader.Store(failureStream, StreamVersion.Any, 
+                        //     new[] { new StorableMessage(m.Metadata, m.Data) });
+                        Console.WriteLine("==================================================");
+                        Console.WriteLine("= FAILURE ========================================");
+                        Console.WriteLine("==================================================");
+                        Console.WriteLine(ex.Message);
+                        Console.WriteLine(ex.StackTrace);
                     }
                 }
                 position += messages.Count();

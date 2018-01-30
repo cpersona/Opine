@@ -3,9 +3,8 @@ using System.Threading.Tasks;
 
 namespace Opine.Messaging
 {
-    public interface IMessageStore
+    public interface IMessageStore : IMessageReader, IMessageWriter
     {
-        Task<IEnumerable<StoredMessage>> Read(Stream stream, long position, int count);
-        Task Store(Stream stream, long version, IEnumerable<StorableMessage> storableMessages);
+
     }
 }
