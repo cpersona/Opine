@@ -269,7 +269,7 @@ public class MyHandler
 Opine comes with a message processing console application. This application, **Opine.Job** provides a quick way to process work asynchronously. The job can process Events or Commands.
 
 #### Opine.Job
-The application reads new messages from the registered `IMessageStore` instance. You specify what Stream to read (Event or Command). You can provide override options such as the offset into the message store to start reading from and the number of messages to read into memory. You can also provide a specific Ttype (Aggregate type) to process. 
+The application reads new messages from the registered `IMessageStore` instance. You specify what Stream to read (Event or Command). You can provide override options such as the offset into the message store to start reading from and the number of messages to read into memory. You can also provide a specific type (Aggregate type) to process. 
 
 | Option | Name | Default Value | Description |
 |--------|------|:-------------:|-------------|
@@ -303,12 +303,14 @@ public class TestPlugin : IPlugin
             // Repository
             .AddScoped<IRepository, EventSourcedRepository>()
             // Messaging
-            .AddScoped<IMessageStore, ESMessageStore>(s => 
-                {
+            .AddScoped<IEventStoreConnection>(s => {
                     var connection = EventStoreConnection.Create(new IPEndPoint(IPAddress.Loopback, 1113));
                     connection.ConnectAsync().Wait();
                     return connection;
                 })
+            .AddScoped<IMessageStore, ESMessageStore>()
+            .AddScoped<ISnapshotStore, ESSnapshotStore>()
+                
             // Unit of work
             .AddScoped<IUnitOfWork, ESUnitOfWork>()
             
