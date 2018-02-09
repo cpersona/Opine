@@ -81,11 +81,13 @@ The signature of a handler depends on the type of dispatching that is used, whet
 #### Processes (or Sagas)
 Processes in Opine are implemented by marking classes with the `HandlerClassAttribute` and providing a ProcessCode value. Each Process type has a unique ProcessCode. As with other event handlers, process handler methods must be marked with `HandlerMethodAttribute`. Certain events with either start or resume a process. Those events will typically not have the correct ProcessCode. For these event handlers, `HandlerMethodAttribute.IsProcessStart` should be set to true. 
 
+__NOTE:__ Process state is not currently persisted by Opine. This feature will be included in an upcoming release. 
+
 ### State
 When loading or rehydrating Aggregates, there are two options: Event Sourcing and State Sourcing.
 
 #### State Sourcing
-State sourcing in Opine is enabled by using the `StateSourcedRepository` in conjunction with `IAggregateLoader<T>`, which serves as a way of restoring the state of an Aggregate from arbitrary storage such as relational or non-relational databases. State sourced Aggregates inherit from `Aggregate<T>` and provide a constructor that a root instance (state) and a version number.
+State sourcing in Opine is enabled by using the `StateSourcedRepository` in conjunction with `IAggregateLoader<T>`, which serves as a way of restoring the state of an Aggregate from arbitrary storage such as relational or non-relational databases. State sourced Aggregates inherit from `Aggregate<T>` and provide a constructor taking a root instance (state) and a version number.
 
 ```C#
 // Root entity type
@@ -191,7 +193,7 @@ public class UserAggregate : EventSourcedAggregateBase<User>
 }
 ```
 
-If using a case statement is not preferred, then the `EventSourcedAggregate<T>` can be used. Event handlers are registered in the constructor of the class utilizing helper methods declare in the base class. 
+If using a case statement is not preferred, then the `EventSourcedAggregate<T>` can be used. Event handlers are registered in the constructor of the class utilizing helper methods declared in the base class. 
 
 ```C#
 // Root entity type (can be a non-EF POCO)
