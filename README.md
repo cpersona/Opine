@@ -95,10 +95,11 @@ public class User
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
+    public int Version { get; set; }
 }
 
 // Loader to load root from EF context
-public class UserAggregateLoader : IAggregateLoader<User>
+public class UserAggregateLoader : IAggregateLoader<UserAggregate>
 {
     private MyContext db;
     
@@ -109,15 +110,16 @@ public class UserAggregateLoader : IAggregateLoader<User>
     
     public async Task<IAggregate> Load(Type type, object id) 
     {
-        Check.IsOfType<User>(type);
+        Check.IsOfType<UserAggregate>(type);
         return await Load(id);
     }
     
-    public async Task<User> Load(object id) 
+    public async Task<UserAggregate> Load(object id) 
     {
         // Return the user by id or a new instance with the given id. 
         // NOTE: We always return an instance
-        return (await db.Users.Where(x => x.Id == id).FirstOrDefaultAsync()) ?? new User { Id = id };
+        let root = (await db.Users.Where(x => x.Id == id).FirstOrDefaultAsync()) ?? new User { Id = id };
+        return new UserAggregate(root, root.Version);
     }
 }
 
