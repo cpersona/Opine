@@ -9,7 +9,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Opine.Dispatching;
 using Opine.Dispatching.Dynamic;
 using Opine.Messaging;
-using Opine.Messaging.GetEventStore;
 using Opine.Plugins;
 
 namespace Opine.Job
