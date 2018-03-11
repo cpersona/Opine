@@ -388,18 +388,18 @@ public class TestPlugin : IPlugin
 }
 ```
 
-# Technologies
+## Technologies
 * .NET Core 2.0
 * C# 7
 
-# Optional Technologies
+## Optional Technologies
 * N/A
 
-# Third-party Libraries
+## Third-party Libraries
 * Newtonsoft.Json (https://github.com/JamesNK/Newtonsoft.Json)
 * CommandLineParser (https://github.com/gsscoder/commandline)
 * EventStore.ClientAPI.NetCore (https://github.com/EventStore/ClientAPI.NetCore)
 
-# References
+## References
 * Martin Fowler on CQRS (https://martinfowler.com/bliki/CQRS.html)
 * CQRS FAQ (http://cqrs.nu/Faq)
