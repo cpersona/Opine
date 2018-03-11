@@ -81,11 +81,13 @@ The signature of a handler depends on the type of dispatching that is used, whet
 #### Processes (or Sagas)
 Processes in Opine are implemented by marking classes with the `HandlerClassAttribute` and providing a ProcessCode value. Each Process type has a unique ProcessCode. As with other event handlers, process handler methods must be marked with `HandlerMethodAttribute`. Certain events with either start or resume a process. Those events will typically not have the correct ProcessCode. For these event handlers, `HandlerMethodAttribute.IsProcessStart` should be set to true. 
 
+__NOTE:__ Process state is not currently persisted by Opine. This feature will be included in an upcoming release. 
+
 ### State
 When loading or rehydrating Aggregates, there are two options: Event Sourcing and State Sourcing.
 
 #### State Sourcing
-State sourcing in Opine is enabled by using the `StateSourcedRepository` in conjunction with `IAggregateLoader<T>`, which serves as a way of restoring the state of an Aggregate from arbitrary storage such as relational or non-relational databases. State sourced Aggregates inherit from `Aggregate<T>` and provide a constructor that a root instance (state) and a version number.
+State sourcing in Opine is enabled by using the `StateSourcedRepository` in conjunction with `IAggregateLoader<T>`, which serves as a way of restoring the state of an Aggregate from arbitrary storage such as relational or non-relational databases. State sourced Aggregates inherit from `Aggregate<T>` and provide a constructor taking a root instance (state) and a version number.
 
 ```C#
 // Root entity type
@@ -93,10 +95,11 @@ public class User
 {
     public Guid Id { get; set; }
     public string Name { get; set; }
+    public int Version { get; set; }
 }
 
 // Loader to load root from EF context
-public class UserAggregateLoader : IAggregateLoader<User>
+public class UserAggregateLoader : IAggregateLoader<UserAggregate>
 {
     private MyContext db;
     
@@ -107,15 +110,16 @@ public class UserAggregateLoader : IAggregateLoader<User>
     
     public async Task<IAggregate> Load(Type type, object id) 
     {
-        Check.IsOfType<User>(type);
+        Check.IsOfType<UserAggregate>(type);
         return await Load(id);
     }
     
-    public async Task<User> Load(object id) 
+    public async Task<UserAggregate> Load(object id) 
     {
         // Return the user by id or a new instance with the given id. 
         // NOTE: We always return an instance
-        return (await db.Users.Where(x => x.Id == id).FirstOrDefaultAsync()) ?? new User { Id = id };
+        let root = (await db.Users.Where(x => x.Id == id).FirstOrDefaultAsync()) ?? new User { Id = id };
+        return new UserAggregate(root, root.Version);
     }
 }
 
@@ -141,7 +145,57 @@ public class UserAggregate : Aggregate<User>
 ```
 
 #### Event Sourcing
-Event sourcing in Opine is enabled by using the `EventSourcedRepository` in conjunction with aggregates that inherit `EventSourcedAggregate<T>`. Event sourced Aggregates must provide a constructor that accepts a root instance (snapshot), a version number, and a sequence of events to source from. 
+Event sourcing in Opine is enabled by using the `EventSourcedRepository` in conjunction with aggregates that inherit `EventSourcedAggregateBase<T>` and `EventSourcedAggregate<T>`. Event sourced Aggregates must provide a constructor that accepts a root instance (snapshot), a version number, and a sequence of events to source from. 
+
+Classes that inherit from `EventSourcedAggregateBase<T>` can define a simple case statement to handle event sourcing.
+
+```C#
+// Root entity type (can be a non-EF POCO)
+public class User 
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+}
+
+// Event sourced aggregate
+public class UserAggregate : EventSourcedAggregateBase<User> 
+{
+    // Constructor has required format
+    public UserAggregate(User root, int version, IEnumerable<IEvent> events) 
+        : base(root, version, events)
+    {
+
+    }
+    
+    public override void Apply(IEvent e)
+    {
+        switch (e) 
+        {
+            case NameChanged evt:
+                OnNameChanged(evt);
+                break;
+            ...
+        }
+    }
+    
+    private void OnNameChanged(NameChanged e)
+    {
+        // Update name on root
+        Root.Name = name;
+    }
+    
+    public void ChangeName(string name)
+    {
+        if (Root.Name != name)
+        {
+            // Emit the event (OnNameChanged will be called by base class)
+            Emit(new NameChanged(name));
+        }
+    }
+}
+```
+
+If using a case statement is not preferred, then the `EventSourcedAggregate<T>` can be used. Event handlers are registered in the constructor of the class utilizing helper methods declared in the base class. 
 
 ```C#
 // Root entity type (can be a non-EF POCO)
@@ -180,6 +234,7 @@ public class UserAggregate : EventSourcedAggregate<User>
     }
 }
 ```
+
 
 ##### Snapshots
 Snapshots are stored in an `ISnapshotStore`. A snapshot is created after an Aggregate's events are saved to the event store. When the Aggregate is loaded, the Snapshot for the Aggregate is loaded and used as the root instance if it is available. 
