@@ -393,7 +393,7 @@ public class TestPlugin : IPlugin
 * C# 7
 
 # Optional Technologies
-* Event Store (https://geteventstore.com)
+* N/A
 
 # Third-party Libraries
 * Newtonsoft.Json (https://github.com/JamesNK/Newtonsoft.Json)
