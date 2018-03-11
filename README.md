@@ -398,7 +398,6 @@ public class TestPlugin : IPlugin
 ## Third-party Libraries
 * Newtonsoft.Json (https://github.com/JamesNK/Newtonsoft.Json)
 * CommandLineParser (https://github.com/gsscoder/commandline)
-* EventStore.ClientAPI.NetCore (https://github.com/EventStore/ClientAPI.NetCore)
 
 ## References
 * Martin Fowler on CQRS (https://martinfowler.com/bliki/CQRS.html)
