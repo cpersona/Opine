@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using EventStore.ClientAPI;
 using Microsoft.Extensions.DependencyInjection;
 using Opine.Dispatching;
 using Opine.Dispatching.Dynamic;
@@ -70,7 +69,9 @@ namespace Opine.Job
                             // Set the current message context
                             messageContextAccessor.Default = new MessageContext(
                                 m.MessageId, m.Metadata.AggregateId, 
-                                m.Metadata.ProcessCode, m.Metadata.ProcessId);
+                                m.Metadata.ProcessCode, m.Metadata.ProcessId,
+                                m.MessageDate,
+                                m.MessageUser);
                             
                             // Get the dispatcher
                             var dispatcher = messageScope.ServiceProvider.GetRequiredService<IDispatcher>();
