@@ -46,7 +46,7 @@ namespace Opine.Repositories.StateSourced
         {
             var loader = aggregateLoaderFactory.GetLoader(type);
             if (loader == null)
-                throw new Exception(""); // TODO: Correct exception
+                throw new Exception($"No loader found for type '{type.Name}'"); // TODO: Correct exception
             return loader;
         }
     }
