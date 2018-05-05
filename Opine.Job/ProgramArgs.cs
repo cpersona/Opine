@@ -10,7 +10,7 @@ namespace Opine.Job
             HelpText = "Stream to read, e.g. commands")]
         public string StreamName { get; set; }
 
-        [Option('t', "type", Required = true,
+        [Option('t', "type", Required = false,
             HelpText = "Aggregate type to read, e.g. User")]
         public string StreamType { get; set; } = null;
 
@@ -27,6 +27,6 @@ namespace Opine.Job
         [OptionArray('a', "assemblies", Required = true,
             HelpText = "Plugin assemblies, e.g. {Path}/{To}/{Assembly}.dll")]
         public string[] AssemblyNames { get; set; } 
-        // ***REMOVED***
+        // = new[] { "/Users/christianpena/Documents/proj/cs/Tpv/Tpv.Plugins/bin/Debug/netstandard2.0/publish/Tpv.Plugins.dll" };
     }
 }

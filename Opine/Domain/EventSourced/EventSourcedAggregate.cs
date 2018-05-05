@@ -4,6 +4,7 @@ using System.Collections.Generic;
 namespace Opine.Domain.EventSourced
 {
     public class EventSourcedAggregate<TRoot> : EventSourcedAggregateBase<TRoot>
+        where TRoot : class, new()
     {
         private Dictionary<Type, Action<IEvent>> map = 
             new Dictionary<Type, Action<IEvent>>();

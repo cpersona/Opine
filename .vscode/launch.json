@@ -10,7 +10,12 @@
            "request": "launch",
            "preLaunchTask": "build",
            "program": "${workspaceRoot}/Opine.Job/bin/Debug/netcoreapp2.0/Opine.Job.dll",
-           "args": [ ],
+           "args": [
+                "-s", "commands",
+                "-o", "0",
+                "-b", "100",
+                "-a", "${workspaceRoot}/../Opine.Sample/Opine.Sample.Plugins/bin/Debug/netstandard2.0/Opine.Sample.Plugins.dll",
+           ],
            "cwd": "${workspaceRoot}/Opine.Job/",
            "stopAtEntry": false,
            "console": "internalConsole"

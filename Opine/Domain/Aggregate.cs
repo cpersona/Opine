@@ -3,6 +3,7 @@ using System.Collections.Generic;
 namespace Opine.Domain
 {
     public class Aggregate<TRoot> : IAggregate<TRoot>
+        where TRoot : class, new()
     {
         private List<IEvent> events = new List<IEvent>();
         private TRoot root;
@@ -10,7 +11,7 @@ namespace Opine.Domain
 
         public Aggregate(TRoot root, long version)
         {
-            this.root = root;
+            this.root = root ?? new TRoot();
             this.version = version;
         }
 

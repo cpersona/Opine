@@ -15,9 +15,12 @@ namespace Opine.Repositories.EventSourced
         private IMessageStore messageStore;
         private ISnapshotStore snapshotStore;
 
-        public EventSourcedRepository(IMessageStore messageStore)
+        public EventSourcedRepository(
+            IMessageStore messageStore, 
+            ISnapshotStore snapshotStore)
         {
             this.messageStore = messageStore;
+            this.snapshotStore = snapshotStore;
         }
 
         public async Task<IAggregate> Load(Type type, object id)

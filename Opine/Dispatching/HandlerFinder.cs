@@ -1,12 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Opine.Domain;
 
 namespace Opine.Dispatching
 {
     public class HandlerFinder : IHandlerFinder
     {
+        public IEnumerable<HandlerInfo> FindHandlers(Assembly assembly)
+        {
+            foreach (var type in assembly.ExportedTypes)
+            {
+                foreach (var hi in FindHandlers(type))
+                {
+                    yield return hi;
+                }
+            }
+        }
+
         public IEnumerable<HandlerInfo> FindHandlers(Type type)
         {
             var handlerClassAttribute = type

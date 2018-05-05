@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 namespace Opine.Domain.EventSourced
 {
-    public abstract class EventSourcedAggregateBase<TRoot> : Aggregate<TRoot>
+    public abstract class EventSourcedAggregateBase<TRoot> : Aggregate<TRoot> 
+        where TRoot : class, new()
     {
         public EventSourcedAggregateBase(TRoot root, long version, IEnumerable<IEvent> events) : base(root, version)
         {
