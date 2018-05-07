@@ -26,13 +26,6 @@ namespace Opine.Job
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
             var configuration = builder.Build();
 
-            // Load options extensions and bind the ProgramOptions 
-            // options to the configuration
-            serviceCollection
-                .AddOptions()
-                .Configure<EventStoreOptions>(configuration.GetSection("EventStore"))
-                .Configure<AssemblyOptions>(configuration.GetSection("Assemblies"));
-
             ConfigureDependencies(serviceCollection);
         }
 

@@ -26,7 +26,6 @@ namespace Opine.Job
 
         [OptionArray('a', "assemblies", Required = true,
             HelpText = "Plugin assemblies, e.g. {Path}/{To}/{Assembly}.dll")]
-        public string[] AssemblyNames { get; set; } 
-        // = new[] { "/Users/christianpena/Documents/proj/cs/Tpv/Tpv.Plugins/bin/Debug/netstandard2.0/publish/Tpv.Plugins.dll" };
+        public string[] AssemblyNames { get; set; }
     }
 }
