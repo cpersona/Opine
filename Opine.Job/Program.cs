@@ -56,6 +56,8 @@ namespace Opine.Job
             // Start reading the messages
             var messageReader = serviceProvider.GetRequiredService<IMessageReader>();
             var messageContextAccessor = serviceProvider.GetRequiredService<MessageContextAccessor>();
+
+            var messageContextFactory = serviceProvider.GetRequiredService<IMessageContextFactory>();
             while (true)
             {
                 var messages = await messageReader.Read(stream, position, bufferSize);
@@ -67,11 +69,7 @@ namespace Opine.Job
                         using (var messageScope = serviceProvider.CreateScope())
                         {
                             // Set the current message context
-                            messageContextAccessor.Default = new MessageContext(
-                                m.MessageId, m.Metadata.AggregateId, 
-                                m.Metadata.ProcessCode, m.Metadata.ProcessId,
-                                m.MessageDate,
-                                m.MessageUser);
+                            messageContextAccessor.Default = messageContextFactory.Create(m);
                             
                             // Get the dispatcher
                             var dispatcher = messageScope.ServiceProvider.GetRequiredService<IDispatcher>();

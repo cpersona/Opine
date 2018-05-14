@@ -32,13 +32,15 @@ namespace Opine.Job
         public static void ConfigureDependencies(IServiceCollection serviceCollection)
         {
             serviceCollection
-                // Dispatching
-                .AddScoped<Dispatching.IHandlerFinder, Dispatching.HandlerFinder>()
+                // Messaging
+                .AddScoped<Messaging.IMetadataFactory, Messaging.MetadataFactory>()
                 // Handler registration
                 .AddSingleton<Dispatching.HandlerRegistry>()
                 .AddSingleton<Dispatching.IHandlerRegistry>(s => 
                     s.GetRequiredService<Dispatching.HandlerRegistry>())
-                // Message context
+                // Dispatching
+                .AddScoped<Dispatching.IHandlerFinder, Dispatching.HandlerFinder>()
+                .AddScoped<Dispatching.IMessageContextFactory, Dispatching.MessageContextFactory>()
                 .AddSingleton<Dispatching.MessageContextAccessor>()
                 .AddSingleton<Dispatching.IMessageContextAccessor>(s => 
                     s.GetRequiredService<Dispatching.MessageContextAccessor>());

@@ -54,7 +54,7 @@ namespace Opine.Repositories.EventSourced
             var storables = aggregate.Events
                 .Select(x => 
                     new StorableMessage(
-                        new Metadata(messageContext.AggregateId, messageContext.ProcessCode, messageContext.ProcessId),
+                        new Metadata(messageContext.AggregateId, messageContext.ProcessCode, messageContext.ProcessId, DateTime.Now),
                         x));
             var stream = new Stream(Categories.Events, aggregate.GetType(), messageContext.AggregateId);
             await messageStore.Store(stream, aggregate.Version, storables);

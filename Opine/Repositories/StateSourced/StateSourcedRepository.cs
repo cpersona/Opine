@@ -11,11 +11,16 @@ namespace Opine.Repositories.StateSourced
     {
         private IAggregateLoaderFactory aggregateLoaderFactory;
         private IMessageStore messageStore;
+        private IMetadataFactory metadataFactory;
 
-        public StateSourcedRepository(IAggregateLoaderFactory aggregateLoaderFactory, IMessageStore messageStore)
+        public StateSourcedRepository(
+            IAggregateLoaderFactory aggregateLoaderFactory, 
+            IMessageStore messageStore,
+            IMetadataFactory metadataFactory)
         {
             this.aggregateLoaderFactory = aggregateLoaderFactory;
             this.messageStore = messageStore;
+            this.metadataFactory = metadataFactory;
         }
 
         public async Task<IAggregate> Load(Type type, object id)
@@ -34,12 +39,10 @@ namespace Opine.Repositories.StateSourced
         {
             var stream = new Stream(Categories.Events, aggregate.GetType(), messageContext.AggregateId);
             await messageStore.Store(stream, StreamVersion.Any, 
-                aggregate.Events.Select(x => 
+                aggregate.Events.Select(evt => 
                     new StorableMessage(
-                        new Metadata(messageContext.AggregateId, 
-                            messageContext.ProcessCode,
-                            messageContext.ProcessId),
-                        x)));
+                        metadataFactory.Create(messageContext),
+                        evt)));
         }
 
         private IAggregateLoader GetLoader(Type type)
